@@ -1,4 +1,4 @@
-package converter
+package reader
 
 import (
 	"regexp"
@@ -9,30 +9,31 @@ import (
 	"golang.org/x/net/html/charset"
 )
 
-// Content Struct
+// Document Struct
 // 内容结构 ...
-type Content struct {
+type Document struct {
 	HTML  string
 	Bytes []byte
+	URL   string
 }
 
 /*---------------------------------------------------------------*/
 
-// Run Converter Function
+// Converter Function
 // 运行对当前进程进行编码转换成UTF-8 ...
-func (content *Content) Run() (string, bool) {
+func (doc *Document) Converter() (*Document, bool) {
 
 	// 自动获取资源编码 ...
-	charset, ok := content.getCharset()
+	charset, ok := doc.getCharset()
 
 	// 未获取到资源编码 ...
 	if !ok {
-		return "", false
+		return nil, false
 	}
 
 	// UTF-8无需转换 ...
 	if charset == "UTF-8" {
-		return content.HTML, true
+		return doc, true
 	}
 
 	// 转换其他编码至UTF-8 ...
@@ -41,24 +42,25 @@ func (content *Content) Run() (string, bool) {
 		defer cil.Close()
 
 		// 开始转换编码 ...
-		output, err := cil.ConvertString(content.HTML)
+		doc.HTML, err = cil.ConvertString(doc.HTML)
 
 		if err == nil {
-			return output, true
+			return doc, true
 		}
 	}
 
-	return "", false
+	// 转码失败
+	return nil, false
 }
 
 /*---------------------------------------------------------------*/
 
 // Charset Function
 // 返回当前进程的字符集 ...
-func (content *Content) getCharset() (string, bool) {
+func (doc *Document) getCharset() (string, bool) {
 
 	// 自动获取编码 ...
-	encoding, name, ok := charset.DetermineEncoding(content.Bytes, "")
+	encoding, name, ok := charset.DetermineEncoding(doc.Bytes, "")
 
 	// 如果自动获取成功或encoding不为空
 	// 则输出编码格式 ...
@@ -72,7 +74,7 @@ func (content *Content) getCharset() (string, bool) {
 
 	// 如果内容中出现汉字
 	// 则输出GB18030 ...
-	if isHan(content.HTML) {
+	if isHan(doc.HTML) {
 		return "GB18030", true
 	}
 
