@@ -1,4 +1,4 @@
-package reader
+package http
 
 import (
 	"time"
@@ -16,22 +16,26 @@ var Config = struct {
 	Timeout  time.Duration
 	Browser  string
 	Platform string
-}{}
+}{
+	Timeout:  10,
+	Browser:  "chrome",
+	Platform: "MAC",
+}
 
 // Load Function
 // 加载Web ...
-func Load(url string) (*Document, bool) {
+func Load(url string, navigate ...bool) (*Document, bool) {
 
 	doc := &Document{}
 
 	doc.URL = url
 
-	if doc, ok := doc.TerminalHTTPClient(); ok {
-		return doc, ok
-	}
-
-	if Config.Browser == "Navigate" {
+	if len(navigate) == 1 && navigate[0] {
 		if doc, ok := doc.NavigateHTTPClient(); ok {
+			return doc, ok
+		}
+	} else {
+		if doc, ok := doc.TerminalHTTPClient(); ok {
 			return doc, ok
 		}
 	}
@@ -82,7 +86,7 @@ func (doc *Document) NavigateHTTPClient() (*Document, bool) {
 		case <-time.After(Config.Timeout * time.Second):
 			return nil, false
 		case <-time.Tick(2 * time.Millisecond):
-			driver := agouti.PhantomJS()
+			driver := agouti.ChromeDriver()
 
 			defer driver.Stop()
 
@@ -99,7 +103,7 @@ func (doc *Document) NavigateHTTPClient() (*Document, bool) {
 
 			page.Navigate(doc.URL)
 
-			time.Sleep(2 * time.Second)
+			// time.Sleep(2 * time.Second)
 
 			if doc.HTML, err = page.HTML(); err == nil {
 				doc.HTML = gohtml.Format(doc.HTML)
