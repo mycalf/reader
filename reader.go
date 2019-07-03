@@ -86,7 +86,7 @@ func (doc *Document) NavigateHTTPClient() (*Document, bool) {
 		case <-time.After(Config.Timeout * time.Second):
 			return nil, false
 		case <-time.Tick(2 * time.Millisecond):
-			driver := agouti.ChromeDriver()
+			driver := agouti.PhantomJS()
 
 			defer driver.Stop()
 
