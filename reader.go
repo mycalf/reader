@@ -94,7 +94,12 @@ func (doc *Document) NavigateHTTPClient() (*Document, bool) {
 				return nil, false
 			}
 
-			capabilities := agouti.NewCapabilities().Browser(Config.Browser).Platform(Config.Platform).Without("javascriptEnabled")
+			capabilities := agouti.
+				NewCapabilities().
+				Browser(Config.Browser).
+				Platform(Config.Platform).
+				Without("javascriptEnabled")
+
 			page, err := driver.NewPage(agouti.Desired(capabilities))
 
 			if err != nil {
