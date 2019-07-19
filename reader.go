@@ -107,9 +107,6 @@ func (doc *Document) NavigateHTTPClient() (*Document, bool) {
 			}
 
 			page.Navigate(doc.URL)
-
-			// time.Sleep(2 * time.Second)
-
 			if doc.HTML, err = page.HTML(); err == nil {
 				doc.HTML = gohtml.Format(doc.HTML)
 				return doc, true
