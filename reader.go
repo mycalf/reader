@@ -7,6 +7,7 @@ import (
 	"github.com/yosssi/gohtml"
 	gentleman "gopkg.in/h2non/gentleman.v2"
 	"gopkg.in/h2non/gentleman.v2/plugins/headers"
+	"gopkg.in/h2non/gentleman.v2/plugins/redirect"
 	"gopkg.in/h2non/gentleman.v2/plugins/timeout"
 )
 
@@ -43,6 +44,12 @@ func Load(url string, navigate ...bool) (*Document, bool) {
 	return nil, false
 }
 
+// UTF8 Funciton
+// 转换为UTF8 ...
+func (doc *Document) UTF8() (*Document, bool) {
+	return doc.Converter()
+}
+
 // TerminalHTTPClient Funciton
 // 命令行下HTTP客户端 ...
 func (doc *Document) TerminalHTTPClient() (*Document, bool) {
@@ -58,23 +65,27 @@ func (doc *Document) TerminalHTTPClient() (*Document, bool) {
 	req.Use(headers.Set("Accept-Language", "zh-CN,zh;q=0.9"))
 
 	req.Use(timeout.Request(10 * time.Second))
+	req.Use(timeout.Request(10 * time.Second))
+	req.Use(redirect.Limit(20))
 
 	// Define dial specific timeouts
 	req.Use(timeout.Dial(5*time.Second, 30*time.Second))
 
 	resp, err := req.Send()
 
+	doc.Resp = resp
+
 	if err != nil && !resp.Ok {
-		return nil, false
+		return doc, false
 	}
 
 	if resp.StatusCode == 200 {
 		doc.HTML = resp.String()
 		doc.Bytes = resp.Bytes()
-		return doc.Converter()
+		return doc, true
 	}
 
-	return nil, false
+	return doc, false
 }
 
 // NavigateHTTPClient Function

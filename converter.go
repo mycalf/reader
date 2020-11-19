@@ -7,6 +7,7 @@ import (
 
 	iconv "github.com/djimenez/iconv-go"
 	"golang.org/x/net/html/charset"
+	"gopkg.in/h2non/gentleman.v2"
 )
 
 // Document Struct
@@ -15,6 +16,7 @@ type Document struct {
 	HTML  string
 	Bytes []byte
 	URL   string
+	Resp  *gentleman.Response
 }
 
 /*---------------------------------------------------------------*/
@@ -28,7 +30,7 @@ func (doc *Document) Converter() (*Document, bool) {
 
 	// 未获取到资源编码 ...
 	if !ok {
-		return nil, false
+		return doc, false
 	}
 
 	// UTF-8无需转换 ...
@@ -50,7 +52,7 @@ func (doc *Document) Converter() (*Document, bool) {
 	}
 
 	// 转码失败
-	return nil, false
+	return doc, false
 }
 
 /*---------------------------------------------------------------*/
